@@ -36,6 +36,25 @@ SAVE_FILE = "savegame.json"
 def draw_text(text, x, y, color=(0, 0, 0)):
     img = FONT.render(text, True, color)
     screen.blit(img, (x, y))
+
+# Функция для отрисовки прогресса миссий
+def draw_mission_progress(missions_manager):
+    x = WIDTH - 230
+    y = 30
+    draw_text("Миссии:", x, y - 25)
+    for m in missions_manager.missions:
+        if not m["completed"]:
+            if "монет" in m["description"]:
+                current = missions_manager.coins_collected
+            elif "труб" in m["description"]:
+                current = missions_manager.pipes_passed
+            elif "сердечка" in m["description"]:
+                current = missions_manager.hearts_collected
+            else:
+                current = 0
+            draw_text(f"{m['description']}: {current}/{m['target']}", x, y)
+            y += 25
+            
 # Функция для отрисовки шкалы здоровья
 def draw_health_bar(x, y, health, max_health=100, width=100, height=10):
     pygame.draw.rect(screen, (0, 0, 0), (x - 2, y - 2, width + 4, height + 4))  # рамка
@@ -506,6 +525,7 @@ def main():
             draw_text(f"Здоровье: {bird.health}", 10, 100)
             draw_text(f"Погода: {weather.type}", 10, 130)
             draw_health_bar(120, 100, bird.health)
+            draw_mission_progress(missions_manager)
 
 
             weather.draw()
