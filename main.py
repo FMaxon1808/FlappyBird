@@ -36,6 +36,12 @@ SAVE_FILE = "savegame.json"
 def draw_text(text, x, y, color=(0, 0, 0)):
     img = FONT.render(text, True, color)
     screen.blit(img, (x, y))
+# Функция для отрисовки шкалы здоровья
+def draw_health_bar(x, y, health, max_health=100, width=100, height=10):
+    pygame.draw.rect(screen, (0, 0, 0), (x - 2, y - 2, width + 4, height + 4))  # рамка
+    pygame.draw.rect(screen, (255, 0, 0), (x, y, width, height))  # фон красный
+    green_width = int((health / max_health) * width)
+    pygame.draw.rect(screen, (0, 255, 0), (x, y, green_width, height))  # зелёная часть
 
 # Экран выбора цвета перед стартом
 def choose_color():
@@ -120,7 +126,7 @@ class Bird:
         if self.magnet_duration > 0:
             pygame.draw.circle(screen, MAGNET_COLOR, self.rect.center, 50, 2)
 
-# Остальные классы Pipe, Coin, PowerUp, Heart, Enemy аналогично твоему коду
+
 class Pipe:
     def __init__(self, x):
         self.x = x
@@ -499,6 +505,8 @@ def main():
             draw_text(f"Жизни: {bird.lives}", 10, 70)
             draw_text(f"Здоровье: {bird.health}", 10, 100)
             draw_text(f"Погода: {weather.type}", 10, 130)
+            draw_health_bar(120, 100, bird.health)
+
 
             weather.draw()
             bird.draw()
