@@ -31,6 +31,11 @@ HEART_COLOR = (255, 0, 0)
 ENEMY_COLOR = (139, 0, 0)
 BG_COLORS = [(135, 206, 250), (250, 250, 210), (255, 140, 0), (25, 25, 112)]
 SAVE_FILE = "savegame.json"
+DIFFICULTIES = {
+    "Лёгкая": {"pipe_speed": 3, "enemy_rate": 600},
+    "Средняя": {"pipe_speed": 4, "enemy_rate": 400},
+    "Сложная": {"pipe_speed": 5, "enemy_rate": 250},
+}
 
 # Функция для отрисовки текста
 def draw_text(text, x, y, color=(0, 0, 0)):
@@ -61,6 +66,45 @@ def draw_health_bar(x, y, health, max_health=100, width=100, height=10):
     pygame.draw.rect(screen, (255, 0, 0), (x, y, width, height))  # фон красный
     green_width = int((health / max_health) * width)
     pygame.draw.rect(screen, (0, 255, 0), (x, y, green_width, height))  # зелёная часть
+
+# Главное меню: ввод имени и выбор сложности
+def main_menu():
+    input_name = ""
+    selected_difficulty = 1
+    difficulties = list(DIFFICULTIES.keys())
+    active_input = True
+
+    while True:
+        screen.fill((255, 255, 255))
+        draw_text("Введите имя игрока:", 40, 30)
+        pygame.draw.rect(screen, (200, 200, 200), (40, 60, 300, 30))
+        draw_text(input_name or "___", 45, 65)
+
+        draw_text("Выберите сложность:", 40, 120)
+        for i, diff in enumerate(difficulties):
+            color = (0, 0, 0) if i != selected_difficulty else (255, 0, 0)
+            draw_text(f"{i+1}. {diff}", 60, 160 + i * 30, color)
+
+        draw_text("Нажмите ENTER чтобы начать", 40, 280)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if active_input:
+                    if event.key == pygame.K_RETURN:
+                        if input_name.strip():
+                            return input_name, difficulties[selected_difficulty]
+                    elif event.key == pygame.K_BACKSPACE:
+                        input_name = input_name[:-1]
+                    elif len(input_name) < 12 and event.unicode.isprintable():
+                        input_name += event.unicode
+                if pygame.K_1 <= event.key <= pygame.K_3:
+                    selected_difficulty = event.key - pygame.K_1
+
+        pygame.display.flip()
+        clock.tick(30)
 
 # Экран выбора цвета перед стартом
 def choose_color():
@@ -334,6 +378,7 @@ class SaveManager:
 
 # Основная функция
 def main():
+    player_name, difficulty = main_menu()
     bird_color = choose_color()
     bird = Bird(bird_color)
     pipes = []
@@ -348,8 +393,10 @@ def main():
     save_manager = SaveManager(bird, missions_manager, improvements_manager)
     save_manager.load()
 
-    speed = 4
+    speed = DIFFICULTIES[difficulty]["pipe_speed"]
+    enemy_rate = DIFFICULTIES[difficulty]["enemy_rate"]
     pipe_timer = coin_timer = powerup_timer = heart_timer = enemy_timer = bg_timer = 0
+
     bg_index = 0
 
     game_over = False
@@ -413,7 +460,7 @@ def main():
                 hearts.append(Heart(WIDTH, random.randint(50, HEIGHT - 50)))
                 heart_timer = 0
 
-            if enemy_timer > 400:
+            if enemy_timer > enemy_rate:
                 enemies.append(Enemy(WIDTH, random.randint(50, HEIGHT - 50)))
                 enemy_timer = 0
 
